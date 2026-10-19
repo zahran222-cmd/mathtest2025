@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="رحلة الرياضيات — لعبة تعليمية تفاعلية عن الزوايا لطلاب الصف السابع." />
+<title>رحلة الرياضيات | مغامرة البحث عن الكنز الرياضي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Lalezar&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/game.css" />
+<link rel="stylesheet" href="css/teacher.css" />
+</head>
+<body>
+
+<canvas id="fx-canvas" aria-hidden="true"></canvas>
+<div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+<button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" title="الصوت">🔊</button>
+
+<main id="app" class="app">
+
+  <!-- ============ الشاشة الرئيسية ============ -->
+  <section id="screen-home" class="screen screen--home">
+    <div id="backdrop" class="backdrop" aria-hidden="true"></div>
+
+    <div class="home">
+      <header class="home__head">
+        <p class="home__kicker">لعبة تعليمية · الصف السابع · الرياضيات</p>
+        <h1 class="home__title">رحلة الرياضيات</h1>
+        <p class="home__tagline">انطلق... حل الألغاز... واكتشف الكنز!</p>
+        <p class="home__sub">🧭 مغامرة البحث عن الكنز الرياضي — درس الزوايا</p>
+      </header>
+
+      <div class="home__stage">
+        <figure class="hero-angle">
+          <div id="hero-angle" class="hero-angle__draw"></div>
+          <figcaption id="hero-caption" class="hero-angle__cap"></figcaption>
+        </figure>
+
+        <div class="home__actions">
+          <button id="go-student" class="bigbtn bigbtn--student" type="button">
+            <span class="bigbtn__icon" aria-hidden="true">👨‍🎓</span>
+            <span class="bigbtn__label">دخول الطالب</span>
+            <span class="bigbtn__hint">ابدأ المغامرة واجمع النجوم</span>
+          </button>
+          <button id="go-teacher" class="bigbtn bigbtn--teacher" type="button">
+            <span class="bigbtn__icon" aria-hidden="true">👨‍🏫</span>
+            <span class="bigbtn__label">دخول المعلم</span>
+            <span class="bigbtn__hint">إدارة الطلاب ومتابعة النتائج</span>
+          </button>
+        </div>
+      </div>
+
+      <ol class="roadmap" aria-label="مراحل الرحلة">
+        <li><span aria-hidden="true">🏰</span> بوابة الزوايا</li>
+        <li><span aria-hidden="true">🌲</span> وادي الألغاز</li>
+        <li><span aria-hidden="true">🕳️</span> كهف القياسات</li>
+        <li><span aria-hidden="true">🏯</span> جسر السرعة وقلعة القياس</li>
+        <li><span aria-hidden="true">💎</span> خزينة الكنز</li>
+      </ol>
+
+      <p id="home-note" class="home__note" hidden>
+        لم يُسجَّل أي طالب على هذا الجهاز بعد. يدخل المعلم أولًا (teacher / Math7) أو ينشئ حسابًا جديدًا، ثم يضيف أسماء طلابه.
+      </p>
+      <p class="home__meta">بنك الأسئلة: <span id="bank-count">60</span> سؤالًا · كل رحلة 20 سؤالًا مختارة عشوائيًا</p>
+    </div>
+  </section>
+
+  <!-- ============ دخول المعلم ============ -->
+  <section id="screen-teacher-login" class="screen screen--auth is-hidden">
+    <div id="teacher-login-card" class="authcard">
+      <h1 class="authcard__title">دخول المعلم</h1>
+      <p class="authcard__sub">لكل معلم على هذا الجهاز حساب وبيانات طلاب مستقلة.</p>
+
+      <div id="login-pane">
+        <label class="field">
+          <span class="field__label">اسم المستخدم أو رقم المعلم</span>
+          <input id="teacher-user" class="field__input" type="text" autocomplete="username" placeholder="teacher أو 1001" />
+        </label>
+        <label class="field">
+          <span class="field__label">كلمة المرور</span>
+          <input id="teacher-pass" class="field__input" type="password" autocomplete="current-password" placeholder="••••••" />
+        </label>
+
+        <div id="teacher-msg" class="inline-msg" role="status"></div>
+
+        <div class="authcard__actions">
+          <button id="teacher-login-btn" class="btn btn--primary btn--lg" type="button">تسجيل الدخول</button>
+          <button id="show-register" class="btn" type="button">حساب معلم جديد</button>
+          <button id="teacher-back" class="btn btn--ghost" type="button">رجوع</button>
+        </div>
+        <p class="authcard__hint" id="accounts-hint"></p>
+      </div>
+
+      <div id="register-pane" hidden>
+        <h2 class="authcard__subtitle">إنشاء حساب معلم جديد</h2>
+        <label class="field">
+          <span class="field__label">اسم المعلم</span>
+          <input id="reg-name" class="field__input" type="text" placeholder="مثال: أ. خالد الحارثي" />
+        </label>
+        <label class="field">
+          <span class="field__label">اسم المستخدم (بالإنجليزية، بدون مسافات)</span>
+          <input id="reg-user" class="field__input" type="text" autocomplete="off" placeholder="khaled" />
+        </label>
+        <label class="field">
+          <span class="field__label">كلمة المرور</span>
+          <input id="reg-pass" class="field__input" type="password" autocomplete="new-password" />
+        </label>
+        <label class="field">
+          <span class="field__label">تأكيد كلمة المرور</span>
+          <input id="reg-pass2" class="field__input" type="password" autocomplete="new-password" />
+        </label>
+
+        <div id="register-msg" class="inline-msg" role="status"></div>
+
+        <div class="authcard__actions">
+          <button id="register-btn" class="btn btn--primary btn--lg" type="button">إنشاء الحساب</button>
+          <button id="show-login" class="btn btn--ghost" type="button">لديّ حساب</button>
+        </div>
+        <p class="authcard__hint">سيصلك رقم معلم خاص بك بعد الإنشاء، ويمكنك الدخول به أو باسم المستخدم.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ لوحة المعلم ============ -->
+  <section id="screen-teacher" class="screen screen--teacher is-hidden">
+    <header class="thead">
+      <div class="thead__brand">
+        <span class="thead__logo" aria-hidden="true">📐</span>
+        <div>
+          <h1 class="thead__title">لوحة المعلم — رحلة الرياضيات</h1>
+          <p class="thead__sub">الصف السابع · درس الزوايا</p>
+        </div>
+      </div>
+      <button id="teacher-logout" class="btn btn--ghost" type="button">تسجيل الخروج</button>
+    </header>
+    <nav id="teacher-tabs" class="tabs" aria-label="أقسام لوحة المعلم"></nav>
+    <div id="teacher-view" class="tview"></div>
+  </section>
+
+  <!-- ============ دخول الطالب ============ -->
+  <section id="screen-student-login" class="screen screen--auth is-hidden">
+    <div id="student-login-card" class="authcard authcard--student">
+      <h1 class="authcard__title">أدخل اسمك للبدء</h1>
+      <p class="authcard__sub">اكتب اسمك كما سجّله معلمك.</p>
+
+      <label class="field">
+        <span class="field__label">اسم الطالب</span>
+        <input id="student-name" class="field__input field__input--lg" type="text" autocomplete="off" placeholder="مثال: أحمد محمد" />
+      </label>
+
+      <details class="joinbox" id="joinbox">
+        <summary>لديك رابط أو كود صف من معلمك؟</summary>
+        <label class="field">
+          <span class="field__label">الصق كود الصف هنا</span>
+          <textarea id="class-join-code" class="field__input field__area" rows="3" placeholder="MJC1...."></textarea>
+        </label>
+        <button id="join-class" class="btn btn--primary" type="button">انضمام إلى الصف</button>
+        <div id="join-msg" class="inline-msg" role="status"></div>
+      </details>
+
+      <label class="field" id="teacher-picker" hidden>
+        <span class="field__label">اسمك مسجّل لدى أكثر من معلم — اختر معلمك</span>
+        <select id="student-teacher" class="field__input"></select>
+      </label>
+
+      <div id="student-msg" class="inline-msg" role="status"></div>
+
+      <button id="student-check" class="btn btn--primary btn--lg" type="button">تحقق من الاسم</button>
+
+      <div id="student-welcome" class="welcome" hidden>
+        <p class="welcome__text"></p>
+        <div class="welcome__actions">
+          <button id="start-journey" class="btn btn--gold btn--lg" type="button">ابدأ الرحلة 🚀</button>
+          <button id="change-name" class="btn btn--ghost" type="button">ليس أنا</button>
+        </div>
+      </div>
+
+      <button id="student-back" class="btn btn--ghost" type="button">رجوع</button>
+    </div>
+  </section>
+
+  <!-- ============ خريطة الرحلة ============ -->
+  <section id="screen-map" class="screen screen--map is-hidden">
+    <div id="map-hud"></div>
+    <header class="maphead">
+      <h1 class="maphead__title">خريطة المغامرة</h1>
+      <button class="btn btn--ghost btn--sm" data-quit="1" type="button">خروج</button>
+    </header>
+    <div id="map-guide"></div>
+    <div id="map-stages" class="stages"></div>
+  </section>
+
+  <!-- ============ شاشة اللعب ============ -->
+  <section id="screen-game" class="screen screen--game is-hidden">
+    <div id="game-hud"></div>
+    <div id="question-area" class="qarea"></div>
+    <div class="gamefoot">
+      <button class="btn btn--ghost btn--sm" data-quit="1" type="button">خروج من الرحلة</button>
+      <span class="gamefoot__tip">اختصارات: الأرقام 1-4 للاختيار · H للتلميح · Enter للتالي</span>
+    </div>
+  </section>
+
+  <!-- ============ نهاية المرحلة ============ -->
+  <section id="screen-stage-done" class="screen screen--stagedone is-hidden">
+    <div id="stage-done-body"></div>
+  </section>
+
+  <!-- ============ النتائج ============ -->
+  <section id="screen-results" class="screen screen--results is-hidden">
+    <div id="results-body"></div>
+  </section>
+
+  <!-- ============ إرسال النتيجة إلى المعلم ============ -->
+  <section id="screen-send" class="screen screen--review is-hidden">
+    <header class="reviewhead">
+      <h1 class="reviewhead__title">إرسال النتيجة إلى المعلم</h1>
+      <button id="send-back" class="btn btn--ghost" type="button">رجوع إلى النتيجة</button>
+    </header>
+    <div class="reviewbody">
+      <p class="muted">انسخ الكود التالي وأرسله لمعلمك (واتساب أو بريد)، أو نزّله كملف وأرسله.</p>
+      <label class="field">
+        <span class="field__label">كود النتيجة</span>
+        <textarea id="send-code" class="field__input field__area" rows="6" readonly></textarea>
+      </label>
+      <div class="formrow">
+        <button id="copy-result" class="btn btn--primary btn--lg" type="button">نسخ الكود</button>
+        <button id="download-result" class="btn" type="button">تنزيل كملف</button>
+      </div>
+      <div id="send-msg" class="inline-msg" role="status"></div>
+    </div>
+  </section>
+
+  <!-- ============ مراجعة الأخطاء ============ -->
+  <section id="screen-review" class="screen screen--review is-hidden">
+    <header class="reviewhead">
+      <h1 class="reviewhead__title">مراجعة الأخطاء</h1>
+      <button id="review-back" class="btn btn--ghost" type="button">رجوع إلى النتيجة</button>
+    </header>
+    <div id="review-body" class="reviewbody"></div>
+  </section>
+
+</main>
+
+<div id="modal-host" class="modal-host" hidden></div>
+
+<script src="js/storage.js"></script>
+<script src="js/curriculum.js"></script>
+  <script src="js/angles.js"></script>
+  <script src="js/figures.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/questions.js"></script>
+  <script src="js/banks-unit3.js"></script>
+  <script src="js/ownbank.js"></script>
+  <script src="js/aigen.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/students.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/sync.js"></script>
+<script src="js/teacher.js"></script>
+<script src="js/game.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
